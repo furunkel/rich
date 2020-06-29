@@ -45,12 +45,14 @@ class RichHandler(Handler):
         show_path: bool = True,
         enable_link_path: bool = True,
         highlighter: Highlighter = None,
+        markup: bool = False
     ) -> None:
         super().__init__(level=level)
         self.console = console or get_console()
         self.highlighter = highlighter or self.HIGHLIGHTER_CLASS()
         self._log_render = LogRender(show_level=True, show_path=show_path)
         self.enable_link_path = enable_link_path
+        self.markup = markup
 
     def emit(self, record: LogRecord) -> None:
         """Invoked by logging."""
@@ -62,7 +64,12 @@ class RichHandler(Handler):
 
         level = Text()
         level.append(record.levelname, log_style)
-        message_text = Text(message)
+
+        if self.markup:
+            message_text = Text.from_markup(message)
+        else:
+            message_text = Text(message)
+
         if self.highlighter:
             message_text = self.highlighter(message_text)
         if self.KEYWORDS:
